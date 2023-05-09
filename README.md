@@ -1,5 +1,5 @@
 # ansible_shareplex
-Ansible Automation for Installing SharePlex on Source and Target
+Ansible Automation for Installing SharePlex on Source and Target for Postgres to Postgres replication. 
 
 ## Main.yml: 
 Main yml file for execution
