@@ -1,0 +1,90 @@
+- name: SharePlex Installation...
+  hosts: all
+  become: true
+  become_user: '{{ splex_user }}'
+  become_method: sudo
+  vars_files:
+    - './shareplex_vars.yml'
+
+  tasks:
+
+  #  - name: Print all available facts
+  #    ansible.builtin.debug:
+  #     var: ansible_facts
+      
+   - name: Show  hostname
+     debug:
+        msg: " hostname is {{ ansible_fqdn }}"
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name:  Check shareplex conf file exists
+     stat: path="~/.shareplex/install.conf" 
+     register: spx_conf
+     tags: check_spx_conf_file
+
+   - name: Move Current Conf file
+     command: mv ~/.shareplex/install.conf ~/.shareplex/install.conf.bak
+     when: spx_conf.stat.exists
+     tags: check_spx_conf_file
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+   - name: Copy and Unzip ShaprePlex Binaries to  host
+     unarchive: 
+      src: '{{ local_vars.local_splexsw_dir }}/{{ local_vars.splex_finamename }}'
+      dest: '{{ splex_swdir }}'
+      mode: 0755
+     register: splex_copy_binaries
+     tags: copy_splex
+
+   - debug:
+      var: splex_copy_binaries.stdout_lines
+     tags: copy_splex
+
+# ### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name: Install Shareplex 
+     expect: 
+      echo: yes
+      chdir: '{{ splex_swdir }}'
+      command: './{{ local_vars.tpmfile }}'
+      responses:
+      #  (.*)Please specify the product directory location (.*): '5'
+       (.*)Please enter the product directory location(.*): '{{ SP_SYS_PRODDIR }}'
+       (.*)Please enter the variable data directory location(.*): '{{ SP_SYS_VARDIR }}'
+       (.*)Please specify the SharePlex Admin group (.*): '1'
+       (.*)Please enter the TCP/IP port number for SharePlex communications(.*): '{{ SP_COP_TPORT }}' 
+       (.*)Proceed with installation(.*): "yes"      
+       (.*)Do you have a valid SharePlex v. 11.0.0 license?(.*): "yes" 
+       (.*)Please specify the platform for license key(.*): '10'
+       (.*)Please enter the License key?(.*): '{{ sp_license_key }}'
+     register: splex_install
+     tags: install_splex
+
+   - debug:
+      var: splex_install.stdout_lines
+     tags: install_splex
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name:  Check shareplex conf file exists
+     stat: path="~/.shareplex/install.conf.bak" 
+     register: spx_conf_bak
+     tags: merge_spx_conf_file
+
+   - name:  Check shareplex conf file exists
+     stat: path="~/.shareplex/install.conf" 
+     register: check_spx_new_conf
+     tags: merge_spx_conf_file
+
+   - name: Move/Rename New file
+     command: mv ~/.shareplex/install.conf ~/.shareplex/install.conf.new
+     when: check_spx_new_conf.stat.exists
+     tags: merge_spx_conf_file
+
+   - name: Merge files
+     shell: diff -ZB --line-format %L ~/.shareplex/install.conf.new ~/.shareplex/install.conf.bak > ~/.shareplex/install.conf || /bin/true
+     when: spx_conf_bak.stat.exists
+     tags: merge_spx_conf_file
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------

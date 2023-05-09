@@ -1,0 +1,89 @@
+- name: Install SharePlex...
+  hosts: all
+  tasks:
+    - include_vars: './shareplex_vars.yml'
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+- import_playbook: shareplex_install.yml
+  when: ( ansible_fqdn == '{{ server_1_host.hostname }}' or ansible_hostname == '{{ server_1_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_1_splex_config.SP_BIN }}"
+    splex_user: "{{ server_1_splex_config.splex_os_user }}"
+    splex_swdir: "{{ server_1_splex_config.splex_swdir }}"
+    SP_SYS_PRODDIR: "{{ server_1_splex_config.SP_SYS_PRODDIR }}"
+    SP_SYS_VARDIR: "{{ server_1_splex_config.SP_SYS_VARDIR }}"
+    SP_COP_TPORT: "{{ server_1_splex_config.SP_COP_TPORT }}"
+    sp_license_key: "{{ server_1_splex_config.sp_license_key }}"
+
+- import_playbook: shareplex_install.yml
+  when: ( ansible_fqdn == '{{ server_2_host.hostname }}' or ansible_hostname == '{{ server_2_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_2_splex_config.SP_BIN }}"
+    splex_user: "{{ server_2_splex_config.splex_os_user }}"
+    splex_swdir: "{{ server_2_splex_config.splex_swdir }}"
+    SP_SYS_PRODDIR: "{{ server_2_splex_config.SP_SYS_PRODDIR }}"
+    SP_SYS_VARDIR: "{{ server_2_splex_config.SP_SYS_VARDIR }}"
+    SP_COP_TPORT: "{{ server_2_splex_config.SP_COP_TPORT }}"
+    sp_license_key: "{{ server_2_splex_config.sp_license_key }}"
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+- import_playbook: shareplex_setup.yml
+  when: ( ansible_fqdn == '{{ server_1_host.hostname }}' or ansible_hostname == '{{ server_1_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_1_splex_config.SP_BIN }}"
+    splex_user: "{{ server_1_splex_config.splex_os_user }}"
+    splex_swdir: "{{ server_1_splex_config.splex_swdir }}"
+    SP_SYS_PRODDIR: "{{ server_1_splex_config.SP_SYS_PRODDIR }}"
+    SP_SYS_VARDIR: "{{ server_1_splex_config.SP_SYS_VARDIR }}"
+    SP_COP_TPORT: "{{ server_1_splex_config.SP_COP_TPORT }}"
+    database_server: "{{ server_1_database_env.database_server }}"
+    database_port: "{{ server_1_database_env.database_port }}"
+    postgresql_dsn: "{{ server_1_database_env.postgresql_dsn }}"
+    postgresqladmin: "{{ server_1_database_env.postgresqladmin }}"
+    postgresqladmin_passwd: "{{ server_1_database_env.postgresqladmin_passwd }}"
+    database_name:    "{{ server_1_database_env.database_name }}"    
+    replication_slot:  "{{ server_1_database_env.replication_slot }}"   
+    Driver : "{{ server_1_database_env.Driver }}"
+    Setup  : "{{ server_1_database_env.Setup }}"
+
+- import_playbook: shareplex_setup.yml
+  when: ( ansible_fqdn == '{{ server_2_host.hostname }}' or ansible_hostname == '{{ server_2_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_2_splex_config.SP_BIN }}"
+    splex_user: "{{ server_2_splex_config.splex_os_user }}"
+    splex_swdir: "{{ server_2_splex_config.splex_swdir }}"
+    SP_SYS_PRODDIR: "{{ server_2_splex_config.SP_SYS_PRODDIR }}"
+    SP_SYS_VARDIR: "{{ server_2_splex_config.SP_SYS_VARDIR }}"
+    SP_COP_TPORT: "{{ server_2_splex_config.SP_COP_TPORT }}"
+    database_server: "{{ server_2_database_env.database_server }}"
+    database_port: "{{ server_2_database_env.database_port }}"
+    postgresql_dsn: "{{ server_2_database_env.postgresql_dsn }}"
+    postgresqladmin: "{{ server_2_database_env.postgresqladmin }}"
+    postgresqladmin_passwd: "{{ server_2_database_env.postgresqladmin_passwd }}"
+    database_name:    "{{ server_2_database_env.database_name }}"    
+    replication_slot:  "{{ server_2_database_env.replication_slot }}"   
+    Driver : "{{ server_2_database_env.Driver }}"
+    Setup  : "{{ server_2_database_env.Setup }}"
+
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+- import_playbook: shareplex_status.yml
+  when: ( ansible_fqdn == '{{ server_1_host.hostname }}' or ansible_hostname == '{{ server_1_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_1_splex_config.SP_BIN }}"
+    splex_user: "{{ server_1_splex_config.splex_os_user }}"
+
+- import_playbook: shareplex_status.yml
+  when: ( ansible_fqdn == '{{ server_2_host.hostname }}' or ansible_hostname == '{{ server_2_splex_config.SP_SYS_HOST_NAME }}' )
+  vars:
+    SP_BIN: "{{ server_2_splex_config.SP_BIN }}"
+    splex_user: "{{ server_2_splex_config.splex_os_user }}"
+

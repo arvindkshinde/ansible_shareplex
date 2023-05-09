@@ -1,0 +1,52 @@
+- name: SharePlex Status Check...
+  hosts: all
+  become: true
+  become_user: '{{ splex_user }}'
+  become_method: sudo
+
+
+  tasks:
+
+  #  - name: Print all available facts
+  #    ansible.builtin.debug:
+  #     var: ansible_facts
+
+   - name: Show hostname
+     debug:
+        msg: "Hostname is {{ ansible_fqdn }}"
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+   - name: Start Shareplex on Source
+     shell: './sp_cop &'
+     args:
+       chdir: '{{ SP_BIN }}'
+     register: start_splex_process
+     environment:
+      PATH: "{{ SP_BIN }}:$PATH"
+     tags: start_splex_sp_cop_source
+
+   - debug:
+      var: start_splex_process.stdout_lines
+     tags: start_splex_sp_cop_source
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name: Check Shaplex Status
+     shell: |
+           sp_ctrl <<EOF
+           status             
+           EOF
+     register: splex_source_process
+     environment:
+      PATH: "{{ SP_BIN }}:$PATH"
+     tags: check_splex_source_status
+
+   - debug:
+      var: splex_source_process.stdout_lines
+     tags: check_splex_source_status
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+

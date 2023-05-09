@@ -1,0 +1,98 @@
+- name: SharePlex with PG_Setup utility...
+  hosts: all
+  become: true
+  become_user: '{{ splex_user }}'
+  become_method: sudo
+  vars_files:
+    - './shareplex_vars.yml'
+
+  tasks:
+
+   - name: Show hostname
+     debug:
+        msg: "Hostname is {{ ansible_fqdn }}"
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name: Insert Details in odbc.ini file
+     blockinfile:
+       path: "{{ SP_SYS_VARDIR }}/odbc/odbc.ini"
+       block: |
+          [ {{ postgresql_dsn }} ]
+          Description=PostgreSQL connection to demodb
+          Driver=PostgreSQL
+          Database={{ database_name }}
+          Servername={{ database_server }}
+          UserName={{ postgresqladmin }}
+          Password={{ postgresqladmin_passwd }}
+          Port={{ database_port }}
+     tags: odbc_setup_splex
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name: Insert Details in odbc.ini file
+     blockinfile:
+       path: "{{ SP_SYS_VARDIR }}/odbc/odbcinst.ini"
+       block: |
+        [PostgreSQL]
+        Description = ODBC for PostgreSQL
+        Driver = {{ Driver }}
+        Setup = {{ Setup }}
+        FileUsage = 1     
+     tags: odbc_setup_splex
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   - name: Run pg_setup on Host
+     expect: 
+      echo: yes
+      chdir: '{{ SP_BIN }}'
+      command: './pg_setup -p{{ SP_COP_TPORT }}'
+      responses:
+        (.*)Enter the PostgreSQL DSN name or connection string(.*): '{{ postgresql_dsn }}'
+        (.*)Is DB hosted over Azure(.*): 'n'
+        (.*)Enter the PostgreSQL Administrator name(.*): '{{ postgresqladmin }}'
+        (.*)Enter the password for the Administrator account(.*): '{{ postgresqladmin_passwd }}'
+        (.*)Do you want to continue(.*): 'y'
+        (.*)Enter the database name(.*): '{{ database_name }}'
+        (.*)Would you like to create a new SharePlex user(.*): 'n'
+        (.*)Enter the name of the existing SharePlex user(.*): '{{ postgresqladmin }}'
+        (.*)Enter the password for(.*): '{{ postgresqladmin_passwd }}'
+        (.*)Will this database be used as a source?(.*): 'y'
+        (.*)Enter the replication slot name(.*): '{{ replication_slot }}'
+        (.*)Enter the default tablespace for use by SharePlex(.*): 'pg_default'
+        (.*)Enter the index tablespace for use by SharePlex(.*): 'pg_default'
+     register: splex_pgsetup
+     environment:
+      PATH: "{{ SP_SYS_PRODDIR }}/bin:{{ ansible_env.PATH }}"
+      ODBCINI: "{{ SP_SYS_VARDIR }}/odbc/odbc.ini"
+      ODBCSYSINI: "{{ SP_SYS_VARDIR }}/odbc"
+     tags: pgsetup_splex
+
+   - debug:
+      var: splex_pgsetup.stdout_lines
+     tags: pgsetup_splex
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+   - name: Run pg_security on Host
+     expect: 
+      echo: yes
+      chdir: '{{ SP_BIN }}'
+      command: './sp_security --setup'
+      responses:
+        (.*)Setup configuration for(.*): 'Y'
+        (.*)Security model(.*): '2'
+     register: splex_sec_setup
+     environment:
+      PATH: "{{ SP_SYS_PRODDIR }}/bin:{{ ansible_env.PATH }}"
+      ODBCINI: "{{ SP_SYS_VARDIR }}/odbc/odbc.ini"
+      ODBCSYSINI: "{{ SP_SYS_VARDIR }}/odbc"
+     tags: sp_sec_setup_splex
+
+   - debug:
+      var: splex_sec_setup.stdout_lines
+     tags: sp_sec_setup_splex
+

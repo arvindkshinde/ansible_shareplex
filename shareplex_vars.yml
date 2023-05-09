@@ -1,0 +1,62 @@
+local_vars:
+  local_splexsw_dir: 'local_software_dir'
+  splex_finamename: 'splex_binary_zip_file'
+  tpmfile: 'SharePlex_tpm_file'
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+server_1_host:
+  hostname:            host-1.abc.example
+  instance_name:       null
+
+server_1_splex_config:
+  SP_SYS_PRODDIR: '/SPLEX/testansible/prod'
+  SP_BIN: '/SPLEX/testansible/prod/bin'
+  SP_SYS_VARDIR: '/SPLEX/testansible/var'
+  SP_COP_TPORT: 2500
+  SP_SYS_HOST_NAME: host-1
+  splex_swdir: '/home/splex'
+  splex_os_user: 'splex'
+  sp_license_key: '<license_key>'
+
+server_1_database_env:
+  database_server: 10.0.0.10
+  database_port: 25432
+  postgresql_dsn: test_dsn_name
+  postgresqladmin: splex
+  postgresqladmin_passwd: quest1
+  database_name:        demodb
+  replication_slot:     repl_slot_name
+  Driver : /usr/lib64/psqlodbcw.so
+  Setup  : /usr/lib64/libodbcpsqlS.so
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+server_2_host:
+  hostname:            host-2.abc.example
+  instance_name:       null
+
+server_2_splex_config:
+  SP_SYS_PRODDIR: '/data/SPLEX/testansible/prod'
+  SP_BIN: '/data/SPLEX/testansible/prod/bin'
+  SP_SYS_VARDIR: '/data/SPLEX/testansible/var'
+  SP_COP_TPORT: 2500
+  SP_SYS_HOST_NAME: host-2
+  splex_swdir: '/home/splex'
+  splex_os_user: 'splex'
+  sp_license_key: '<license_key>'
+
+server_2_database_env:
+  database_server: 10.0.0.5
+  database_port: 5432
+  postgresql_dsn: splex
+  postgresqladmin: splexadmin
+  postgresqladmin_passwd: quest1
+  database_name:        demodb
+  replication_slot:     ocean
+  Driver : /usr/pgsql-13/lib/psqlodbc.so
+  Setup  : /usr/lib64/libodbcpsqlS.so
+
+
+### ----------------------------------------------------------------------------------------------------------------------------------------------------------------
